@@ -5,17 +5,17 @@ import matplotlib.pyplot as plt
 import argparse
 import time
 import numpy as np  
-from keras.models import Sequential  
+from keras.models import Sequential
 from keras.layers import Conv2D,MaxPooling2D,UpSampling2D,BatchNormalization,Reshape,Permute,Activation,Input  
-from keras.layers.pooling import AveragePooling2D, MaxPooling2D,GlobalAveragePooling2D
-from keras.layers.core import Dense, Dropout, Activation, Flatten, Reshape, Permute
-from keras.layers.merge import Add,Multiply, Concatenate
-from keras.utils.np_utils import to_categorical  
+from keras.layers import AveragePooling2D, MaxPooling2D,GlobalAveragePooling2D
+from keras.layers import Dense, Dropout, Activation, Flatten, Reshape, Permute
+from keras.layers import Add,Multiply, Concatenate
+from keras.utils import to_categorical  
 from keras.preprocessing.image import img_to_array  
 from keras.callbacks import ModelCheckpoint  
 from sklearn.preprocessing import LabelEncoder  
 from keras.models import Model
-from keras.layers.merge import concatenate
+from keras.layers import concatenate
 from PIL import Image  
 import matplotlib.pyplot as plt  
 import cv2
@@ -81,12 +81,16 @@ def generateData(batch_size,data=[]):
         for i in (range(len(data))): 
             url = data[i]
             batch += 1 
-            img = load_img(filepath + 'train_data/train_src/' + url)
+            label = load_img(filepath + 'train_val_data/label/' + url, grayscale=True) 
+            try:
+              label = img_to_array(label).reshape((img_w * img_h,))
+              train_label.append(label)
+            except:
+              break 
+            img = load_img(filepath + 'train_val_data/image/' + url)
             img = img_to_array(img)  
             train_data.append(img)  
-            label = load_img(filepath + 'train_data/train_label/' + url, grayscale=True) 
-            label = img_to_array(label).reshape((img_w * img_h,))
-            train_label.append(label)  
+   
             if batch % batch_size==0: 
                 #print 'get enough bacth!\n'
                 train_data = np.array(train_data)  
@@ -111,10 +115,10 @@ def generateValidData(batch_size,data=[]):
         for i in (range(len(data))):  
             url = data[i]
             batch += 1  
-            img = load_img(filepath + 'val_data/val_src/' + url)
+            img = load_img(filepath + 'test_data/test_image/' + url)
             img = img_to_array(img)  
             valid_data.append(img)  
-            label = load_img(filepath + 'val_data/val_label/' + url, grayscale=True)
+            label = load_img(filepath + 'test_data/test_label/' + url, grayscale=True)
             label = img_to_array(label).reshape((img_w * img_h,))
             valid_label.append(label)  
             if batch % batch_size==0:  
@@ -130,20 +134,23 @@ def generateValidData(batch_size,data=[]):
                 valid_label = []  
                 batch = 0  
   
-def cab(input1,input2,fn):
-    x = concatenate([input1,input2],axis=3)
-    x = AveragePooling2D((x.get_shape().as_list()[1],x.get_shape().as_list()[1]))(x)
-    x = Conv2D(fn,(1,1),activation="relu", padding="valid")(x)
-    x = Conv2D(input2.get_shape().as_list()[-1],(1,1),padding="valid",activation="sigmoid")(x)
-    x = Multiply()([input2,x])
+def cab(input1, input2, fn):
+    x = Concatenate(axis=3)([input1, input2])  # Thay concatenate bằng Concatenate()
+    x = AveragePooling2D((x.shape[1], x.shape[1]))(x)
+    x = Conv2D(fn, (1, 1), activation="relu", padding="valid")(x)
+    x = Conv2D(input2.shape[-1], (1, 1), padding="valid", activation="sigmoid")(x)
+    x = Multiply()([input2, x])
 
     return x
 
 def rec(input1):
-    x = Conv2D(int(float(input1.get_shape().as_list()[-1])/float(4)),(1,1),activation="relu", padding="same")(input1)
-    x = Conv2D(int(float(input1.get_shape().as_list()[-1])/float(4)),(3,3),activation="relu", padding="same")(x)
-    x = Conv2D(input1.get_shape().as_list()[-1],(1,1),activation="relu", padding="same")(x)
-    x = Add()([x,input1])
+    channels = input1.shape[-1]  # Lấy số channels đầu vào
+    reduced_channels = channels // 4  # Giảm số channels
+
+    x = Conv2D(reduced_channels, (1, 1), activation="relu", padding="same")(input1)
+    x = Conv2D(reduced_channels, (3, 3), activation="relu", padding="same")(x)
+    x = Conv2D(channels, (1, 1), activation="relu", padding="same")(x)
+    x = Add()([x, input1])  # Skip connection
 
     return x
   
@@ -228,16 +235,25 @@ def train(args):
 #    train_set,val_set = get_train_val()
     train_set = []
     val_set  = []
-    for pic in os.listdir(filepath + 'train_data/train_src/'):
+    for pic in os.listdir(filepath + 'train_val_data/image/'):
       train_set.append(pic)
-    for pic in os.listdir(filepath + 'val_data/val_src/'):
+    for pic in os.listdir(filepath + 'test_data/test_image/'):
       val_set.append(pic)
 
     train_numb = len(train_set)  
     valid_numb = len(val_set)  
     print ("the number of train data is",train_numb)  
     print ("the number of val data is",valid_numb)
-    H = model.fit_generator(generator=generateData(BS,train_set),steps_per_epoch=train_numb//BS,epochs=EPOCHS,verbose=1,validation_data=generateValidData(BS,val_set),validation_steps=valid_numb//BS,callbacks=callable,max_q_size=1)  
+    H = model.fit(
+        generateData(BS, train_set),
+        steps_per_epoch=train_numb // BS,
+        epochs=EPOCHS,
+        verbose=1,
+        validation_data=generateValidData(BS, val_set),
+        validation_steps=valid_numb // BS,
+        callbacks=callable
+    )
+      
 
 #    model.save('unet_plam_40_epoch20_para2.h5')
     '''
