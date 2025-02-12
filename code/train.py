@@ -80,8 +80,9 @@ def generateData(batch_size,data=[]):
         batch = 0  
         for i in (range(len(data))): 
             url = data[i]
+            url_ = url.replace(".jpg", ".png")
             batch += 1 
-            label = load_img(filepath + 'train_val_data/label/' + url, grayscale=True) 
+            label = load_img(filepath + 'train_val_data/label/' + url_, grayscale=True) 
             try:
               label = img_to_array(label).reshape((img_w * img_h,))
               train_label.append(label)
@@ -114,11 +115,12 @@ def generateValidData(batch_size,data=[]):
         batch = 0  
         for i in (range(len(data))):  
             url = data[i]
+            url_ = url.replace(".jpg", ".png")
             batch += 1  
             img = load_img(filepath + 'test_data/test_image/' + url)
             img = img_to_array(img)  
             valid_data.append(img)  
-            label = load_img(filepath + 'test_data/test_label/' + url, grayscale=True)
+            label = load_img(filepath + 'test_data/test_label/' + url_, grayscale=True)
             label = img_to_array(label).reshape((img_w * img_h,))
             valid_label.append(label)  
             if batch % batch_size==0:  
