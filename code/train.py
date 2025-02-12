@@ -81,16 +81,16 @@ def generateData(batch_size,data=[]):
         for i in (range(len(data))): 
             url = data[i]
             url_ = url.replace(".jpg", ".png")
-            batch += 1 
             label = load_img(filepath + 'train_val_data/label/' + url_, grayscale=True) 
             try:
               label = img_to_array(label).reshape((img_w * img_h,))
               train_label.append(label)
             except:
-              continue 
+              continue
             img = load_img(filepath + 'train_val_data/image/' + url)
             img = img_to_array(img)  
             train_data.append(img)  
+            batch += 1 
    
             if batch % batch_size==0: 
                 #print 'get enough bacth!\n'
