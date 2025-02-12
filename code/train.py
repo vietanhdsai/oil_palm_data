@@ -73,7 +73,8 @@ def get_train_val(val_rate = 0.25):
 
 # data for training  
 def generateData(batch_size,data=[]):  
-        print ('generateData...')
+    print ('generateData...')
+    while True:  
         train_data = []  
         train_label = []  
         batch = 0  
@@ -86,7 +87,7 @@ def generateData(batch_size,data=[]):
               label = img_to_array(label).reshape((img_w * img_h,))
               train_label.append(label)
             except:
-              break 
+              continue 
             img = load_img(filepath + 'train_val_data/image/' + url)
             img = img_to_array(img)  
             train_data.append(img)  
@@ -107,7 +108,8 @@ def generateData(batch_size,data=[]):
  
 # data for validation 
 def generateValidData(batch_size,data=[]):  
-        print ('generateValidData...')
+    print ('generateValidData...')
+    while True:  
         valid_data = []  
         valid_label = []  
         batch = 0  
