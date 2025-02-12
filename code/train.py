@@ -90,7 +90,10 @@ def generateData(batch_size,data=[]):
             img = load_img(filepath + 'train_val_data/image/' + url)
             img = img_to_array(img)  
             train_data.append(img)  
-            batch += 1 
+            batch += 1
+            print(f"Loading image: {filepath + 'train_val_data/image/' + url}")  
+            print(f"Loading label: {filepath + 'train_val_data/label/' + url_}")  
+
    
             if batch % batch_size==0: 
                 #print 'get enough bacth!\n'
