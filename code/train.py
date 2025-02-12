@@ -73,8 +73,7 @@ def get_train_val(val_rate = 0.25):
 
 # data for training  
 def generateData(batch_size,data=[]):  
-    print ('generateData...')
-    while True:  
+        print ('generateData...')
         train_data = []  
         train_label = []  
         batch = 0  
@@ -108,8 +107,7 @@ def generateData(batch_size,data=[]):
  
 # data for validation 
 def generateValidData(batch_size,data=[]):  
-    print ('generateValidData...')
-    while True:  
+        print ('generateValidData...')
         valid_data = []  
         valid_label = []  
         batch = 0  
