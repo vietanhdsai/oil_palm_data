@@ -108,7 +108,7 @@ def generateData(batch_size,data=[]):
  
 # data for validation 
 def generateValidData(batch_size,data=[]):  
-    #print 'generateValidData...'
+    print ('generateValidData...')
     while True:  
         valid_data = []  
         valid_label = []  
@@ -292,6 +292,7 @@ if __name__=='__main__':
     args = args_parse()
     filepath = args['data']
     time_start=time.time()
+    print("Start training")
     train(args)
     time_end=time.time()
     print('time',time_end-time_start)  
